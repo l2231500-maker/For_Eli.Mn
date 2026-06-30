@@ -1,0 +1,638 @@
+
+const loader = document.getElementById("loader");
+const welcomePage = document.getElementById("welcomePage");
+const lovePage = document.getElementById("lovePage");
+
+const title = document.getElementById("title");
+const input = document.getElementById("messageInput");
+const button = document.getElementById("continueBtn");
+
+const loveContainer = document.getElementById("loveContainer");
+const ending = document.getElementById("ending");
+
+const music = document.getElementById("bgMusic");
+
+const canvas = document.getElementById("stars");
+const ctx = canvas.getContext("2d");
+
+let stars = [];
+let shootingStars = [];
+
+resizeCanvas();
+
+window.addEventListener("resize", resizeCanvas);
+
+function resizeCanvas(){
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+createStars();
+
+}
+
+function createStars(){
+
+stars = [];
+
+for(let i=0;i<180;i++){
+
+stars.push({
+
+x:Math.random()*canvas.width,
+
+y:Math.random()*canvas.height,
+
+r:Math.random()*2,
+
+a:Math.random(),
+
+speed:0.002+Math.random()*0.004
+
+});
+
+}
+
+}
+
+function drawStars(){
+
+ctx.clearRect(0,0,canvas.width,canvas.height);
+
+for(const star of stars){
+
+star.a += star.speed;
+
+const alpha = (Math.sin(star.a)+1)/2;
+
+ctx.beginPath();
+
+ctx.arc(star.x,star.y,star.r,0,Math.PI*2);
+
+ctx.fillStyle=rgba(255,255,255,${alpha});
+
+ctx.fill();
+
+}
+
+requestAnimationFrame(drawStars);
+
+}
+
+drawStars();
+
+const welcomeText = "Welcome";
+
+let index = 0;
+
+function typeTitle(){
+
+if(index < welcomeText.length){
+
+title.textContent += welcomeText[index];
+
+index++;
+
+setTimeout(typeTitle,140);
+
+}
+
+}
+
+setTimeout(()=>{
+
+loader.style.opacity="0";
+
+setTimeout(()=>{
+
+loader.style.display="none";
+
+welcomePage.style.opacity="1";
+
+welcomePage.style.pointerEvents="all";
+
+typeTitle();
+
+},1400);
+
+},1800);
+
+button.disabled=true;
+
+input.addEventListener("input",()=>{
+
+button.disabled = input.value.trim()==="";
+
+});
+function fadeInMusic() {
+
+    music.volume = 0;
+
+    music.play().catch(() => {});
+
+    let volume = 0;
+
+    const fade = setInterval(() => {
+
+        volume += 0.02;
+
+        if (volume >= 1) {
+
+            volume = 1;
+
+            clearInterval(fade);
+
+        }
+
+        music.volume = volume;
+
+    },120);
+
+}
+
+function showTypedText(text){
+
+    const temp=document.createElement("div");
+
+    temp.id="typedPreview";
+
+    temp.innerText=text;
+
+    temp.style.position="absolute";
+
+    temp.style.top="50%";
+
+    temp.style.left="50%";
+
+    temp.style.transform="translate(-50%,-50%)";
+
+    temp.style.fontSize="42px";
+
+    temp.style.fontWeight="700";
+
+    temp.style.color="white";
+
+    temp.style.opacity="1";
+
+    temp.style.transition="1s";
+
+    temp.style.zIndex="999";
+
+    document.body.appendChild(temp);
+
+    setTimeout(()=>{
+
+        temp.style.opacity="0";
+
+        temp.style.filter="blur(10px)";
+
+    },900);
+
+    setTimeout(()=>{
+
+        temp.remove();
+
+    },2000);
+
+}
+
+button.addEventListener("click",()=>{
+
+    welcomePage.style.opacity="0";
+
+    welcomePage.style.pointerEvents="none";
+
+    showTypedText(input.value);
+
+    setTimeout(()=>{
+
+        lovePage.style.opacity="1";
+
+        lovePage.style.pointerEvents="all";
+
+        fadeInMusic();
+
+        startLoveAnimation();
+
+    },1700);
+
+});
+
+const colors=[
+
+"#ffffff",
+
+"#ff7eb6",
+
+"#ff4f81",
+
+"#ff94d0",
+
+"#d88cff"
+
+];
+
+function random(min,max){
+
+    return Math.random()*(max-min)+min;
+
+}
+let loveStarted = false;
+
+function startLoveAnimation(){
+
+    if(loveStarted) return;
+
+    loveStarted = true;
+
+    let created = 0;
+
+    const interval = setInterval(()=>{
+
+        createLoveText();
+
+        created++;
+
+        if(created>180){
+
+            clearInterval(interval);
+
+            finishScene();
+        }
+
+    },180);
+
+}
+
+function createLoveText(){
+
+    const item=document.createElement("div");
+
+    item.className="love";
+
+    item.innerText="I LOVE YOU";
+
+    item.style.color=
+        colors[Math.floor(Math.random()*colors.length)];
+
+    item.style.fontSize=
+        random(16,30)+"px";
+
+    const side=Math.floor(Math.random()*4);
+
+    let startX,startY;
+    let endX,endY;
+
+    switch(side){
+
+        case 0:
+
+            startX=random(0,window.innerWidth);
+
+            startY=-60;
+
+            endX=startX+random(-150,150);
+
+            endY=window.innerHeight+60;
+
+        break;
+
+        case 1:
+
+            startX=random(0,window.innerWidth);
+
+            startY=window.innerHeight+60;
+
+            endX=startX+random(-150,150);
+
+            endY=-60;
+
+        break;
+
+        case 2:
+
+            startX=-150;
+
+            startY=random(0,window.innerHeight);
+
+            endX=window.innerWidth+150;
+
+            endY=startY+random(-120,120);
+
+        break;
+
+        default:
+
+            startX=window.innerWidth+150;
+
+            startY=random(0,window.innerHeight);
+
+            endX=-150;
+
+            endY=startY+random(-120,120);
+
+    }
+
+    item.style.left=startX+"px";
+    item.style.top=startY+"px";
+
+    loveContainer.appendChild(item);
+
+    animateLove(item,startX,startY,endX,endY);
+
+}
+function animateLove(el,startX,startY,endX,endY){
+
+    const duration=random(9000,17000);
+
+    const start=performance.now();
+
+    function frame(now){
+
+        const progress=Math.min((now-start)/duration,1);
+
+        const x=startX+(endX-startX)*progress;
+        const y=startY+(endY-startY)*progress;
+
+        el.style.left=x+"px";
+        el.style.top=y+"px";
+
+        /* محو و ظاهر شدن نرم */
+
+        let opacity;
+
+        if(progress<0.15){
+
+            opacity=progress/0.15;
+
+        }else if(progress>0.85){
+
+            opacity=(1-progress)/0.15;
+
+        }else{
+
+            opacity=1;
+
+        }
+
+        el.style.opacity=opacity;
+
+        /* Glow */
+
+        el.style.textShadow=
+        0 0 8px ${el.style.color},
+        0 0 18px ${el.style.color},
+        0 0 30px ${el.style.color}
+        ;
+
+        if(progress<1){
+
+            requestAnimationFrame(frame);
+
+        }else{
+
+            el.remove();
+
+        }
+
+    }
+
+    requestAnimationFrame(frame);
+
+}
+
+/* ===============================
+   Shooting Star
+=============================== */
+
+setInterval(()=>{
+
+    createShootingStar();
+
+},9000);
+
+function createShootingStar(){
+
+    const star=document.createElement("div");
+
+    star.style.position="absolute";
+
+    star.style.width="3px";
+
+    star.style.height="3px";
+
+    star.style.borderRadius="50%";
+
+    star.style.background="white";
+
+    star.style.boxShadow="0 0 20px white";
+
+    star.style.left=random(0,window.innerWidth/2)+"px";
+
+    star.style.top="-20px";
+
+    star.style.zIndex="2";
+
+    document.body.appendChild(star);
+
+    let x=parseFloat(star.style.left);
+
+    let y=-20;
+
+    const move=setInterval(()=>{
+
+        x+=12;
+
+        y+=8;
+
+        star.style.left=x+"px";
+
+        star.style.top=y+"px";
+
+        if(y>window.innerHeight){
+
+            clearInterval(move);
+
+            star.remove();
+
+        }
+
+    },16);
+
+}
+function finishScene(){
+
+    setTimeout(()=>{
+
+        /* همه متن‌ها محو شوند */
+
+        const all=document.querySelectorAll(".love");
+
+        all.forEach(item=>{
+
+            item.style.transition="2s";
+
+            item.style.opacity="0";
+
+            item.style.filter="blur(8px)";
+
+        });
+
+        /* نمایش پیام نهایی */
+
+        setTimeout(()=>{
+
+            ending.style.opacity="1";
+
+            ending.style.transform="scale(1)";
+
+            ending.style.filter="blur(0px)";
+
+            createHearts();
+
+            fadeOutMusic();
+
+        },2200);
+
+    },30000);
+
+}
+
+/* ===============================
+   Floating Hearts
+=============================== */
+
+function createHearts(){
+
+    const interval=setInterval(()=>{
+
+        const heart=document.createElement("div");
+
+        heart.innerHTML="💘";
+
+        heart.style.position="absolute";
+
+        heart.style.left=random(5,95)+"vw";
+
+        heart.style.bottom="-40px";
+
+        heart.style.fontSize=random(18,34)+"px";
+
+        heart.style.opacity=".9";
+
+        heart.style.pointerEvents="none";
+
+        heart.style.transition="transform 8s linear, opacity 8s linear";
+
+        document.body.appendChild(heart);
+
+        requestAnimationFrame(()=>{
+
+            heart.style.transform=
+            translateY(-${window.innerHeight+120}px);
+
+            heart.style.opacity="0";
+
+        });
+
+        setTimeout(()=>{
+
+            heart.remove();
+
+        },8000);
+
+    },350);
+
+}
+
+/* ===============================
+   Music Fade Out
+=============================== */
+
+function fadeOutMusic(){
+
+    let volume=music.volume;
+
+    const fade=setInterval(()=>{
+
+        volume-=0.02;
+
+        if(volume<=0){
+
+            music.volume=0;
+
+            music.pause();
+
+            clearInterval(fade);
+
+            return;
+
+        }
+
+        music.volume=volume;
+
+    },180);
+
+}
+// افکت درخشش آرام برای پیام پایانی
+setInterval(() => {
+
+    if (ending.style.opacity !== "1") return;
+
+    ending.animate([
+        {
+            transform: "scale(1)",
+            filter: "brightness(1)"
+        },
+        {
+            transform: "scale(1.03)",
+            filter: "brightness(1.25)"
+        },
+        {
+            transform: "scale(1)",
+            filter: "brightness(1)"
+        }
+    ], {
+        duration: 3000,
+        easing: "ease-in-out"
+    });
+
+}, 3500);
+
+
+// جلوگیری از انتخاب متن
+document.body.onselectstart = () => false;
+
+
+// غیرفعال کردن کشیدن عکس‌ها
+document.addEventListener("dragstart", e => {
+    e.preventDefault();
+});
+
+
+// جلوگیری از دوبار کلیک روی Continue
+button.addEventListener("click", () => {
+
+    button.disabled = true;
+
+});
+
+
+// اگر موسیقی به هر دلیلی متوقف شد، مشکلی پیش نیاید
+music.addEventListener("ended", () => {
+
+    music.pause();
+
+});
+
+
+// فوکوس خودکار روی کادر ورود
+window.addEventListener("load", () => {
+
+    input.focus();
+
+});
+
+
+
+console.log("For Elisa ❤️ - Created with love by Lamya");
